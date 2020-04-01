@@ -7,6 +7,7 @@ import com.avito.test.gradle.TestProjectGenerator
 import com.avito.test.gradle.append
 import com.avito.test.gradle.commit
 import com.avito.test.gradle.dir
+import com.avito.test.gradle.file
 import com.avito.test.gradle.git
 import com.avito.test.gradle.kotlinClass
 import java.io.File
@@ -16,6 +17,8 @@ const val androidModuleTestDependency = "androidModuleDependency"
 const val kotlinModuleTestDependency = "kotlinModuleDependency"
 const val markerClass = "kotlinModule.marker.Screen"
 const val markerField = "rootId"
+const val libraryPackage = "com.test.library"
+const val libraryId = "some_lib_id"
 private val artifactoryUrl = System.getProperty("artifactoryUrl")
 
 private fun generateBaseStubProject(dir: File, output: File): File {
@@ -31,6 +34,7 @@ private fun generateBaseStubProject(dir: File, output: File): File {
             ),
             AndroidLibModule(
                 name = androidModuleTestDependency,
+                packageName = libraryPackage,
                 dependencies = "implementation project(':$kotlinModuleTestDependency')"
             ),
             KotlinModule(
@@ -84,6 +88,18 @@ fun generateProjectWithScreensInSingleModule(dir: File, output: File): File {
     val project = generateBaseStubProject(dir = dir, output = output)
 
     with(dir) {
+        dir("$androidModuleTestDependency/src/main/res/layout") {
+            file(
+                "some_layout.xml", """<?xml version="1.0" encoding="utf-8"?>
+                <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:id="@+id/$libraryId"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                </FrameLayout>
+            """.trimIndent()
+            )
+        }
 
         dir("$projectToChange/src/androidTest/kotlin/test") {
             kotlinClass("SomeScreen") {
@@ -91,9 +107,10 @@ fun generateProjectWithScreensInSingleModule(dir: File, output: File): File {
                     package test
 
                     import kotlinModule.marker.Screen
+                    import $libraryPackage.R
 
                     class SomeScreen : Screen {
-                        override val $markerField: Int = -1
+                        override val $markerField: Int = R.id.$libraryId
 
                         fun foo() { }
                     }
@@ -157,9 +174,9 @@ fun generateProjectWithScreensInMultiModule(dir: File, output: File): File {
             kotlinClass("ScreenFromKotlinModule") {
                 """
                     package kotlinModule.marker
-
+                    
                     class ScreenFromKotlinModule : Screen {
-                        override val $markerField: Int = 100
+                        override val $markerField: Int = -1
 
                         fun foo() { }
                     }
@@ -171,7 +188,7 @@ fun generateProjectWithScreensInMultiModule(dir: File, output: File): File {
                     package kotlinModule.marker
 
                     class Screen2FromKotlinModule : Screen {
-                        override val $markerField: Int = 200
+                        override val $markerField: Int = -1
 
                         fun foo() { }
                     }
@@ -208,6 +225,19 @@ fun generateProjectWithScreensInMultiModule(dir: File, output: File): File {
                     }
                 """.trimIndent()
             }
+        }
+
+        dir("$androidModuleTestDependency/src/main/res/layout") {
+            file(
+                "some_layout.xml", """<?xml version="1.0" encoding="utf-8"?>
+                <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:id="@+id/$libraryId"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                </FrameLayout>
+            """.trimIndent()
+            )
         }
 
         dir("$projectToChange/src/androidTest/kotlin/test") {

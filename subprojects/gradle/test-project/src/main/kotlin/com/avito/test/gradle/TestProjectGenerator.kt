@@ -28,7 +28,9 @@ class TestProjectGenerator(
         AndroidLibModule(sharedModule),
         AndroidLibModule(independentModule)
     ),
-    val localBuildCache: File? = null
+    val localBuildCache: File? = null,
+    //todo actually its not working if applied plugin already depends on another version of agp
+    private val agpVersion: String = System.getProperty("androidGradlePluginVersion")
 ) : Module {
 
     companion object {
@@ -48,6 +50,8 @@ class TestProjectGenerator(
     }
 
     override fun generateIn(file: File) {
+        println("Effective AGP version in tests = $agpVersion")
+
         with(file) {
             modules.forEach { it.generateIn(file) }
 
@@ -220,7 +224,8 @@ plugins {
 }
 
 $buildGradleExtra
-""")
+"""
+                )
             }
         }
     }
@@ -410,7 +415,6 @@ $customScript
 
 val sdkVersion: Int by lazy { System.getProperty("compileSdkVersion").toInt() }
 val buildToolsVersion: String by lazy { System.getProperty("buildToolsVersion") }
-val agpVersion: String by lazy { System.getProperty("androidGradlePluginVersion") }
 val kotlinVersion: String by lazy { System.getProperty("kotlinVersion") }
 
 private fun File.build_gradle(configuration: File.() -> Unit = {}) = file("build.gradle").apply(configuration)

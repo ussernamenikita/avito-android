@@ -13,10 +13,18 @@ class AndroidProject(project: Project) : Project by project {
         require(project.isAndroid()) { "Trying to create AndroidProject from non-android ${project.path}" }
     }
 
+    val manifest = AndroidManifest.from(project)
+
     val debug = Variant(
         this,
         AndroidManifest.from(project),
         buildVariant = "debug"
+    )
+
+    val release = Variant(
+        this,
+        AndroidManifest.from(project),
+        buildVariant = "release"
     )
 
     override fun toString(): String {
@@ -29,16 +37,6 @@ class Variant(
     val manifest: AndroidManifest,
     buildVariant: String
 ) {
-
-    private val notNameSpacedRSourcesDir =
-        "${project.buildDir}/generated/not_namespaced_r_class_sources/$buildVariant/r/"
-
-    val rs by lazy {
-        File(notNameSpacedRSourcesDir).walk()
-            .filter { it.name == "R.java" }
-            .map { R(it) }
-            .toList()
-    }
 }
 
 class R(val file: File) {
@@ -66,16 +64,15 @@ class AndroidManifest(
     private val sourceSet: String = "main"
 ) {
     companion object {
-        private val manifestPackagePattern = Regex(" package=\"(.+)\"")
-
-        fun from(project: Project): AndroidManifest {
-            return AndroidManifest(project.projectDir)
-        }
+        fun from(project: Project): AndroidManifest = AndroidManifest(project.projectDir)
     }
 
+    private val packageParser = AndroidManifestPackageParser
+
     fun getPackage(): String {
-        val manifest = File("${projectDir}/src/$sourceSet/AndroidManifest.xml").readText()
-        return manifestPackagePattern.find(manifest)?.groupValues?.get(1)
-            ?: throw NullPointerException("Project $projectDir doesn't have AndroidManifest or package in it")
+        val manifest = File("${projectDir}/src/$sourceSet/AndroidManifest.xml")
+
+        return packageParser.parse(manifest)
+            ?: error("Project $projectDir doesn't have AndroidManifest or package in it")
     }
 }

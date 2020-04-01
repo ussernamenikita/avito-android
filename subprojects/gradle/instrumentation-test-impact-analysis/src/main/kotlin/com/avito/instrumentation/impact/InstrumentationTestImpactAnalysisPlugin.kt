@@ -32,7 +32,9 @@ class InstrumentationTestImpactAnalysisPlugin : Plugin<Project> {
         modifiedProjectsFinder = ModifiedProjectsFinder.from(project)
         modulesBytecodeResolver = BytecodeResolver(project)
 
-        project.withAndroidApp {
+        project.withAndroidApp { app ->
+
+            val testBuildTypeSlug = app.testBuildType.capitalize()
 
             val bytecodeAnalyzeTask = project.tasks.register<TestBytecodeAnalyzeTask>(
                 "analyzeTestBytecode",
@@ -45,7 +47,7 @@ class InstrumentationTestImpactAnalysisPlugin : Plugin<Project> {
                 description = "Analyze androidTest bytecode to collect maps: [Screen:Test], [Screen:RootId]"
 
                 //todo we should also support flavors here
-                dependsOn("${project.path}:compile${it.testBuildType.capitalize()}AndroidTestKotlin")
+                dependsOn("${project.path}:compile${testBuildTypeSlug}AndroidTestKotlin")
             }
 
             project.tasks.register<AnalyzeTestImpactTask>(

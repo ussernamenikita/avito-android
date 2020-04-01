@@ -1,10 +1,10 @@
 package com.avito.instrumentation.impact.util
 
-import com.avito.impact.util.RootId
 import com.avito.impact.util.Screen
 import com.avito.impact.util.Test
 import com.avito.instrumentation.impact.BytecodeAnalyzeSummary
 import com.avito.instrumentation.impact.ImpactSummary
+import com.avito.instrumentation.impact.metadata.ModulePath
 import com.github.salomonbrys.kotson.fromJson
 import com.google.gson.Gson
 import java.io.File
@@ -18,8 +18,8 @@ fun impactAnalysisTestsChangedOutput(outputDir: File): Set<Test> =
 fun impactAnalysisScreensToTestsOutput(outputDir: File) =
     bytecodeAnalyzeSummary(outputDir).testsByScreen
 
-fun impactAnalysisScreenIdsOutput(outputDir: File): Map<Screen, RootId> =
-    bytecodeAnalyzeSummary(outputDir).rootIdByScreen
+fun impactAnalysisScreenIdsOutput(outputDir: File): Map<Screen, ModulePath> =
+    bytecodeAnalyzeSummary(outputDir).screenToModule.map { it.screenClass to it.modulePath }.toMap()
 
 internal fun impactSummary(outputDir: File): ImpactSummary =
     Gson().fromJson(File(outputDir, "impact-summary.json").readText())
