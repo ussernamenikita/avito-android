@@ -14,6 +14,7 @@ import com.avito.report.model.ReportCoordinates
 import com.avito.report.model.SimpleRunTest
 import com.avito.utils.logging.CILogger
 import org.funktionale.tries.Try
+import java.util.concurrent.TimeUnit
 
 class InstrumentationTestsScheduler(
     private val testsRunner: TestsRunner,
@@ -32,9 +33,12 @@ class InstrumentationTestsScheduler(
         buildOnTargetCommitResult: BuildOnTargetCommitForTest.Result
     ): TestsScheduler.Result {
         val flakyTestInfo = FlakyTestInfo()
+        val start = System.currentTimeMillis()
         val initialTestSuite = testSuiteProvider.getInitialTestSuite(
             tests = testSuiteLoader.loadTestSuite(params.testApk, AllChecks())
         )
+        val end = System.currentTimeMillis()
+        logger.info("Apk parsing was ${TimeUnit.MILLISECONDS.toSeconds(end - start)}")
         val initialTestsResult = testsRunner.runTests(
             mainApk = params.mainApk,
             testApk = params.testApk,
