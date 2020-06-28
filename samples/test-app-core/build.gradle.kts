@@ -1,6 +1,8 @@
 plugins {
     id("com.android.library")
     id("kotlin-android")
+    id("kotlin-kapt")
+    id("com.avito.android.room-config")
 }
 
 android {
@@ -31,6 +33,7 @@ dependencies(delegateClosureOf<DependencyHandler> {
     api(Dependencies.test.junit)
     api(Dependencies.androidTest.rules)
     api("com.avito.android:test-inhouse-runner")
+    api("androidx.room:room-runtime:2.2.4")
 
     androidTestRuntimeOnly(Dependencies.playServicesMaps) // todo remove, problem with test-inhouse-runner or ui-testing-core
 })

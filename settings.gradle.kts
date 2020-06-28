@@ -73,6 +73,7 @@ pluginManagement {
             }
             filter {
                 includeGroup("com.gradle")
+                includeGroup("com.gradle.enterprise")
                 includeGroup("org.jetbrains.kotlin.jvm")
                 includeGroup("com.jfrog.bintray")
                 includeGroup("com.slack.keeper")
@@ -116,5 +117,59 @@ pluginManagement {
                     useModule("com.slack.keeper:keeper:0.4.3")
             }
         }
+    }
+}
+
+plugins {
+    id("com.gradle.enterprise") version "3.3.4"
+}
+
+gradleEnterprise {
+    buildScan {
+        termsOfServiceUrl = "https://gradle.com/terms-of-service"
+        termsOfServiceAgree = "yes"
+        publishAlways()
+    }
+}
+
+val isCI = booleanProperty("ci", false)
+
+buildCache {
+    local {
+        directory = file(".gradle/build-cache")
+        isEnabled = !isCI
+        isPush = !isCI
+        removeUnusedEntriesAfterDays = 7
+    }
+    remote<HttpBuildCache> {
+        url = uri("http://localhost:5071/cache/")
+        isEnabled = true
+        isPush = isCI
+        isAllowUntrustedServer = true
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+fun booleanProperty(name: String, defaultValue: Boolean): Boolean {
+    return if (settings.extra.has("name")) {
+        settings.extra[name]?.toString()?.toBoolean() ?: defaultValue
+    } else {
+        defaultValue
     }
 }

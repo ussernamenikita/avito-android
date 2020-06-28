@@ -16,6 +16,7 @@ import com.avito.utils.gradle.KubernetesCredentials.Service
 import com.avito.utils.gradle.kubernetesCredentials
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import com.avito.android.plugin.build_param_check.CheckMode
 
 buildscript {
     buildscript {
@@ -29,6 +30,7 @@ plugins {
     id("org.jetbrains.kotlin.jvm") apply false
     id("com.android.application") apply false
     id("com.avito.android.instrumentation-tests") apply false
+    id("com.avito.android.buildchecks")
 }
 
 /**
@@ -38,6 +40,13 @@ plugins {
 val buildTools = "29.0.3"
 val javaVersion = JavaVersion.VERSION_1_8
 val compileSdk = 29
+
+buildChecks {
+    enableByDefault = false
+    incrementalKapt {
+        mode = CheckMode.NONE
+    }
+}
 
 subprojects {
 
